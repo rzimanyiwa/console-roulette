@@ -1,5 +1,6 @@
 package com.playsafeholdings.consoleroulette;
 
+import com.playsafeholdings.consoleroulette.bet.BetService;
 import com.playsafeholdings.consoleroulette.player.Player;
 import com.playsafeholdings.consoleroulette.player.PlayerService;
 import org.slf4j.Logger;
@@ -30,6 +31,9 @@ public class ConsoleRouletteApplication implements CommandLineRunner {
     @Autowired
     private PlayerService playerService;
 
+    @Autowired
+    private BetService betService;
+
     public static void main(String[] args) {
         SpringApplication.run(ConsoleRouletteApplication.class, args);
     }
@@ -38,6 +42,21 @@ public class ConsoleRouletteApplication implements CommandLineRunner {
     public void run(String... args) throws Exception
     {
         fileToInputStream();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            String input = "";
+            while (!"q".equalsIgnoreCase(input)) {
+                input = br.readLine();
+                if (input.length() > 0) {
+                    List<String> betArgs = Arrays.asList(input.split("\\s+"));
+                    String playerName = betArgs.get(0);
+                    String betNumber = betArgs.get(1);
+                    BigDecimal amount = new BigDecimal(betArgs.get(2));
+                    betService.addBet(playerName, betNumber, amount);
+                }
+            }
+        } catch (IOException e) {
+            logger.info("An error occurred: {}", e);
+        }
     }
 
     private String readFromInputStream(InputStream inputStream) throws IOException {
